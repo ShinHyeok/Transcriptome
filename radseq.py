@@ -2,7 +2,7 @@ import re
 import matplotlib.pyplot as plt 
 import sys
 
-name = 'Xenopus_tropicalis_v9.1_genomic.fna'
+name = 'testgenome.txt'
 save = 'genome'
 f_enz= open('regular_enz.txt','r')
 
@@ -24,7 +24,7 @@ for line in f_genome:
     else:
         genome += line.strip()
 enz_list = enzyme.keys()
-
+print 'done'
 cut = {}
 for enz in enz_list:
     tmp_enz = enzyme[enz]
@@ -32,6 +32,12 @@ for enz in enz_list:
     list1 = [m.start()+tmp_enz.find('/') for m in re.finditer(pattern, genome.upper())]
     cut[enz] = list1
 enz_list = enzyme.keys()
+print 'done'
+
+tmp_coverage = 0
+candidate = ''
+cndidate_num = ''
+count = 0
 
 for key in cut.keys():
     for key2 in cut.keys():
@@ -39,20 +45,60 @@ for key in cut.keys():
         num = 0
         coverage = 0
         if key == key2:
-            break
+            continue
         list_s = cut[key]+cut[key2]
         a = set(list_s)
         comp_set = sorted(a,reverse=True)
         for i in range(len(comp_set)-1):
             tmp_len = comp_set[i]-comp_set[i+1]
-            length.append()
+            length.append(tmp_len)
             if tmp_len >100 and tmp_len <500:
                 num += 1
-                coverage += 1
-        plt.hist(length, rwidth=0.8)
-        plt.title(key +' with '+key2 +'\n' + str(float(coverage)/len(genome))+' with '+'num')
-        plt.suptitle(title_string, y=1.05, fontsize=17)
-        plt.savefig('%s/%s + %s.png'%(save,key,key2))
-        plt.close()
+                coverage +=tmp_len
+        if coverage > tmp_coverage:
+            tmp_coverage = coverage
+            candidate = key+ ' with ' + key2
+        if num > count:
+            count = num
+            candidate_num = key+' with ' + key2
+
+length = []
+num = 0
+coverage = 0            
+key,a,key2 = candidate.split()
+list_s = cut[key]+cut[key2]
+a = set(list_s)
+comp_set = sorted(a,reverse=True)
+for i in range(len(comp_set)-1):
+    tmp_len = comp_set[i]-comp_set[i+1]
+    length.append(tmp_len)
+    if tmp_len >100 and tmp_len <500:
+        num += 1
+        coverage +=tmp_len
+plt.hist(length, rwidth=0.8)
+plt.title(key +' with '+key2 +'\n' + str(float(coverage)/len(genome))+' with '+'num')
+plt.savefig('%s/%s + %s.png'%(save,key,key2))
+plt.close()
+
+length = []
+num = 0
+coverage = 0
+key,a,key2 = candidate_num.split()
+list_s = cut[key]+cut[key2]
+a = set(list_s)
+comp_set = sorted(a,reverse=True)
+for i in range(len(comp_set)-1):
+    tmp_len = comp_set[i]-comp_set[i+1]
+    length.append(tmp_len)
+    if tmp_len >100 and tmp_len <500:
+        num += 1
+        coverage +=tmp_len
+plt.hist(length, rwidth=0.8)
+plt.title(key +' with '+key2 +'\n' + str(float(coverage)/len(genome))+' with '+'num')
+plt.savefig('%s/%s + %s.png'%(save,key,key2))
+plt.close()
+
+with open('best.txt','w') as f:
+    f.write(candidate+'\n'+candidate_num)
 f_genome.close()
 f_enz.close()
