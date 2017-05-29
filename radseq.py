@@ -2,8 +2,8 @@ import re
 import matplotlib.pyplot as plt 
 import sys
 
-name = 'testgenome.txt'
-save = 'genome'
+name = sys.argv[1]
+save = sys.argv[2]
 f_enz= open('regular_enz.txt','r')
 
 enzyme = {}
@@ -32,13 +32,14 @@ for enz in enz_list:
     list1 = [m.start()+tmp_enz.find('/') for m in re.finditer(pattern, genome.upper())]
     cut[enz] = list1
 enz_list = enzyme.keys()
-print 'done'
+print 'done2'
 
 tmp_coverage = 0
 candidate = ''
 cndidate_num = ''
 count = 0
 
+keysave = {}
 for key in cut.keys():
     for key2 in cut.keys():
         length = []
@@ -61,12 +62,13 @@ for key in cut.keys():
         if num > count:
             count = num
             candidate_num = key+' with ' + key2
-
+	keysave[key]=cut[key]
+    del cut[key]
 length = []
 num = 0
 coverage = 0            
 key,a,key2 = candidate.split()
-list_s = cut[key]+cut[key2]
+list_s = keysave[key]+keysave[key2]
 a = set(list_s)
 comp_set = sorted(a,reverse=True)
 for i in range(len(comp_set)-1):
@@ -76,15 +78,15 @@ for i in range(len(comp_set)-1):
         num += 1
         coverage +=tmp_len
 plt.hist(length, rwidth=0.8)
-plt.title(key +' with '+key2 +'\n' + str(float(coverage)/len(genome))+' with '+'num')
-plt.savefig('%s/%s + %s.png'%(save,key,key2))
+plt.title(key +' with '+key2 +'\n' + str(float(coverage)/len(genome))+' with '+num)
+plt.savefig('%s/%s + %s_best_coverage.png'%(save,key,key2))
 plt.close()
 
 length = []
 num = 0
 coverage = 0
 key,a,key2 = candidate_num.split()
-list_s = cut[key]+cut[key2]
+list_s = keysave[key]+keysave[key2]
 a = set(list_s)
 comp_set = sorted(a,reverse=True)
 for i in range(len(comp_set)-1):
@@ -94,8 +96,8 @@ for i in range(len(comp_set)-1):
         num += 1
         coverage +=tmp_len
 plt.hist(length, rwidth=0.8)
-plt.title(key +' with '+key2 +'\n' + str(float(coverage)/len(genome))+' with '+'num')
-plt.savefig('%s/%s + %s.png'%(save,key,key2))
+plt.title(key +' with '+key2 +'\n' + str(float(coverage)/len(genome))+' with '+num)
+plt.savefig('%s/%s + %s_best_num.png'%(save,key,key2))
 plt.close()
 
 with open('best.txt','w') as f:
